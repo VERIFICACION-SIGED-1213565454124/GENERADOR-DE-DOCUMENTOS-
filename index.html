@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Generador de Documentos Pro</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
+
+  <style>
+    body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;max-width:850px;margin:0 auto;padding:25px;background:#f4f4f9;position:relative;padding-bottom:100px}
+    h1{color:#2c3e50;text-align:center;margin-bottom:25px}
+    .input-group,.form-section{background:#fff;padding:20px;margin-bottom:25px;border-radius:8px;box-shadow:0 4px 6px rgba(0,0,0,.1)}
+    h2{color:#34495e;border-bottom:2px solid #3498db;padding-bottom:5px;margin-bottom:15px}
+    label{display:block;margin-top:10px;font-weight:700;color:#555}
+    input,textarea{width:100%;padding:10px;margin-top:5px;margin-bottom:15px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box}
+    textarea{height:100px;resize:vertical}
+    .btn-action{background:#e67e22;color:#fff;padding:15px 20px;border:none;border-radius:5px;cursor:pointer;font-size:1.1em;width:100%;margin-top:10px;transition:.3s;font-weight:bold}
+    .btn-action:hover{background:#d35400}
+    .back-button{background:#95a5a6;width:auto;padding:10px 15px;color:white;border:none;border-radius:4px;cursor:pointer;margin-bottom:10px}
+    .form-section{display:none}
+    .disclaimer-notice{background:#fcebeb;color:#c0392b;padding:10px;border:1px solid #c0392b;border-radius:4px;margin-bottom:20px;text-align:center;font-weight:700;font-size:.85em}
+    .whatsapp-float{position:fixed;width:60px;height:60px;bottom:40px;left:20px;background:#25d366;color:#fff;border-radius:50px;text-align:center;font-size:30px;box-shadow:2px 2px 3px #999;z-index:100;display:flex;align-items:center;justify-content:center;text-decoration:none}
+    
+    /* Grid de Menú */
+    .icon-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-top:10px;margin-bottom:25px}
+    .menu-card{background:#fff;padding:20px;border-radius:8px;box-shadow:0 4px 6px rgba(0,0,0,.1);cursor:pointer;text-align:center;transition:.3s;border:1px solid #eee}
+    .menu-card:hover{transform:translateY(-5px);box-shadow:0 8px 15px rgba(0,0,0,.15)}
+    .menu-card i{font-size:2.5em;margin-bottom:8px;color:#3498db}
+    
+    /* Historial */
+    .history-container{margin-top:30px;border-top:2px solid #ddd;padding-top:20px}
+    .history-item{display:flex;justify-content:space-between;align-items:center;background:#fff;padding:12px;margin-bottom:10px;border-radius:6px;border-left:5px solid #27ae60;box-shadow:0 2px 4px rgba(0,0,0,0.05)}
+    .btn-download-small{background:#27ae60;color:white;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;font-size:0.9em}
+    
+    /* Toolbar Admin/User */
+    .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+    .btn-logout{background:#e74c3c;color:white;border:none;padding:8px 15px;border-radius:5px;cursor:pointer}
+  </style>
+</head>
+<body>
+
+  <h1>📝 Generador de Documentos</h1>
+  <div class="disclaimer-notice">*USO RESPONSABLE: EL USUARIO ES RESPONSABLE LEGAL DE LOS DATOS INGRESADOS*</div>
+
+  <div id="view-auth" class="form-section" style="display:block;">
+    <div class="input-group">
+      <h2>👤 Iniciar Sesión</h2>
+      <input type="email" id="loginUser" placeholder="Email">
+      <input type="password" id="loginPass" placeholder="Contraseña">
+      <button class="btn-action" onclick="handleLogin()">Entrar</button>
+      <p style="text-align:center">¿No tienes cuenta? <a href="#" onclick="showView('view-register')">Regístrate aquí</a></p>
+    </div>
+  </div>
+
+  <div id="view-register" class="form-section">
+    <button class="back-button" onclick="showView('view-auth')">← Volver</button>
+    <div class="input-group">
+      <h2>📝 Registro de Usuario</h2>
+      <input type="text" id="regName" placeholder="Nombre Completo">
+      <input type="email" id="regUser" placeholder="Email">
+      <input type="password" id="regPass" placeholder="Contraseña">
+      <button class="btn-action" style="background:#3498db" onclick="handleRegister()">Solicitar Acceso</button>
+    </div>
+  </div>
+
+  <div id="view-menu" class="form-section">
+    <div class="toolbar">
+      <h3>Hola, <span id="display-name"></span></h3>
+      <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+    </div>
+
+    <div class="icon-grid">
+      <div class="menu-card" onclick="showView('view-form-receta')">
+        <i class="fas fa-prescription-bottle-alt" style="color:#27ae60"></i>
+        <strong>Receta Médica</strong>
+      </div>
+      <div class="menu-card" onclick="showView('view-form-laboral')">
+        <i class="fas fa-briefcase" style="color:#e67e22"></i>
+        <strong>Carta Laboral</strong>
+      </div>
+    </div>
+
+    <div class="history-container">
+      <h3>📂 Mis Documentos Generados</h3>
+      <div id="history-list">
+        <p style="color:gray">Aún no has generado documentos.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-form-receta" class="form-section">
+    <button class="back-button" onclick="showView('view-menu')">← Volver</button>
+    <div class="input-group">
+      <h2>💊 Datos de la Receta</h2>
+      <label>Nombre del Paciente:</label>
+      <input type="text" id="f-paciente" placeholder="Ej. Juan Pérez">
+      <label>Diagnóstico:</label>
+      <textarea id="f-dx">Malestar general.</textarea>
+      <label>Tratamiento:</label>
+      <textarea id="f-tratamiento">Reposo absoluto y líquidos.</textarea>
+      <button class="btn-action" onclick="processDocument('receta')">⚡ Generar y Descargar</button>
+    </div>
+  </div>
+
+  <div id="view-form-laboral" class="form-section">
+    <button class="back-button" onclick="showView('view-menu')">← Volver</button>
+    <div class="input-group">
+      <h2>✉️ Recomendación Laboral</h2>
+      <label>Nombre del Recomendado:</label>
+      <input type="text" id="f-recomendado" placeholder="Nombre completo">
+      <label>Puesto que ocupaba:</label>
+      <input type="text" id="f-puesto" placeholder="Ej. Auxiliar">
+      <button class="btn-action" onclick="processDocument('laboral')">⚡ Generar y Descargar</button>
+    </div>
+  </div>
+
+  <div id="view-admin" class="form-section">
+    <div class="toolbar">
+      <h2>⚙️ Panel de Control</h2>
+      <button class="btn-logout" onclick="logout()">Salir</button>
+    </div>
+    <div class="input-group">
+      <h3>Autorizar Usuarios</h3>
+      <div id="admin-user-list"></div>
+    </div>
+  </div>
+
+  <a href="https://wa.me/message/AZLK65CETSPQL1" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
+
+  <script>
+    const { jsPDF } = window.jspdf;
+    
+    // Configuración de Storage
+    const KEY_USERS = 'APP_USUARIOS';
+    const KEY_HISTORY = 'APP_HISTORIAL_DOCS';
+    const ADMIN_MAIL = atob('dHJvbGxnYWdhOTk5QGdtYWlsLmNvbQ==');
+    const ADMIN_PASS = atob('Sm9oYW4yMDc=');
+
+    let currentUser = null;
+
+    // --- NAVEGACIÓN ---
+    function showView(viewId) {
+      document.querySelectorAll('.form-section').forEach(v => v.style.display = 'none');
+      document.getElementById(viewId).style.display = 'block';
+      if(viewId === 'view-menu') renderHistory();
+      if(viewId === 'view-admin') renderAdmin();
+    }
+
+    // --- LÓGICA DE USUARIOS ---
+    function handleRegister() {
+      const name = document.getElementById('regName').value;
+      const user = document.getElementById('regUser').value;
+      const pass = document.getElementById('regPass').value;
+      if(!name || !user || !pass) return alert("Llena todos los campos");
+
+      let users = JSON.parse(localStorage.getItem(KEY_USERS) || '[]');
+      if(users.find(u => u.user === user)) return alert("El correo ya existe");
+
+      users.push({ name, user, pass, status: 'pending' });
+      localStorage.setItem(KEY_USERS, JSON.stringify(users));
+      alert("Registro exitoso. Espera a que el administrador te autorice.");
+      showView('view-auth');
+    }
+
+    function handleLogin() {
+      const user = document.getElementById('loginUser').value;
+      const pass = document.getElementById('loginPass').value;
+
+      if(user === ADMIN_MAIL && pass === ADMIN_PASS) {
+        currentUser = { name: 'Administrador', user: ADMIN_MAIL, role: 'admin' };
+        showView('view-admin');
+        return;
+      }
+
+      const users = JSON.parse(localStorage.getItem(KEY_USERS) || '[]');
+      const found = users.find(u => u.user === user && u.pass === pass);
+
+      if(!found) return alert("Credenciales incorrectas");
+      if(found.status !== 'authorized') return alert("Tu cuenta aún no ha sido autorizada por el admin.");
+
+      currentUser = found;
+      document.getElementById('display-name').innerText = currentUser.name;
+      showView('view-menu');
+    }
+
+    function logout() {
+      currentUser = null;
+      showView('view-auth');
+    }
+
+    // --- LÓGICA DE DOCUMENTOS (DESCARGA DIRECTA) ---
+    async function processDocument(tipo) {
+      const doc = new jsPDF();
+      let filename = "Documento.pdf";
+
+      if(tipo === 'receta') {
+        const pac = document.getElementById('f-paciente').value || "Paciente";
+        doc.setFontSize(20);
+        doc.text("RECETA MÉDICA", 105, 20, {align: 'center'});
+        doc.setFontSize(12);
+        doc.text(`Paciente: ${pac}`, 20, 40);
+        doc.text(`DX: ${document.getElementById('f-dx').value}`, 20, 50);
+        doc.text(`Tratamiento: ${document.getElementById('f-tratamiento').value}`, 20, 60);
+        filename = `Receta_${pac}.pdf`;
+      } else {
+        const rec = document.getElementById('f-recomendado').value || "Persona";
+        doc.text("CARTA DE RECOMENDACIÓN", 105, 20, {align: 'center'});
+        doc.text(`A quien corresponda: Recomiendo ampliamente a ${rec}`, 20, 50);
+        filename = `Carta_${rec}.pdf`;
+      }
+
+      const pdfBase64 = doc.output('datauristring');
+      
+      // Guardar en historial
+      const history = JSON.parse(localStorage.getItem(KEY_HISTORY) || '[]');
+      history.push({
+        owner: currentUser.user,
+        name: filename,
+        date: new Date().toLocaleString(),
+        blob: pdfBase64
+      });
+      localStorage.setItem(KEY_HISTORY, JSON.stringify(history));
+
+      // Descarga Automática
+      const link = document.createElement('a');
+      link.href = pdfBase64;
+      link.download = filename;
+      link.click();
+
+      alert("¡Documento generado y descargado!");
+      showView('view-menu');
+    }
+
+    // --- RENDERIZADO DE INTERFAZ ---
+    function renderHistory() {
+      const container = document.getElementById('history-list');
+      const allHistory = JSON.parse(localStorage.getItem(KEY_HISTORY) || '[]');
+      const myDocs = allHistory.filter(h => h.owner === currentUser.user).reverse();
+
+      if(myDocs.length === 0) {
+        container.innerHTML = '<p style="color:gray">No hay documentos creados.</p>';
+        return;
+      }
+
+      container.innerHTML = myDocs.map(doc => `
+        <div class="history-item">
+          <div>
+            <strong>${doc.name}</strong><br>
+            <small>${doc.date}</small>
+          </div>
+          <button class="btn-download-small" onclick="downloadAgain('${doc.blob}', '${doc.name}')">Descargar</button>
+        </div>
+      `).join('');
+    }
+
+    function downloadAgain(blob, name) {
+      const link = document.createElement('a');
+      link.href = blob;
+      link.download = name;
+      link.click();
+    }
+
+    function renderAdmin() {
+      const container = document.getElementById('admin-user-list');
+      const users = JSON.parse(localStorage.getItem(KEY_USERS) || '[]');
+      
+      container.innerHTML = users.map(u => `
+        <div style="background:#eee; padding:10px; margin-bottom:5px; border-radius:5px; display:flex; justify-content:space-between;">
+          <span>${u.name} (${u.user}) - <strong>${u.status}</strong></span>
+          ${u.status === 'pending' ? `<button onclick="approveUser('${u.user}')">Autorizar</button>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function approveUser(email) {
+      let users = JSON.parse(localStorage.getItem(KEY_USERS) || '[]');
+      users = users.map(u => u.user === email ? {...u, status:'authorized'} : u);
+      localStorage.setItem(KEY_USERS, JSON.stringify(users));
+      renderAdmin();
+    }
+
+  </script>
+</body>
+</html>
+
